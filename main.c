@@ -25,6 +25,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 // setup inicial das metricas e contagems de operacoes
 typedef struct {
@@ -37,12 +38,6 @@ Metrics metrics;
 void reset_metrics() {
   metrics.comparisons = 0;
   metrics.swaps = 0;
-}
-
-void generate_random_list(int *list, long n) {
-  for (long i = 0; i < n; i++) {
-    list[i] = rand() % 10000;
-  }
 }
 
 void swap(int *a, int *b) {
@@ -262,4 +257,59 @@ void radix_sort(int *list, long n) {
   }
 }
 
-int main(int argc, char *argv[]) { return EXIT_SUCCESS; }
+// funcao para gerar lista aleatório
+void generate_random_list(int *arr, long n) {
+  for (long i = 0; i < n; i++) {
+    arr[i] = rand() % 10000;
+  }
+}
+
+// teste
+void test_algorithm(void (*sort_func)(int *, long), const char *name, long size,
+                    int runs) {
+  long total_comparisons = 0;
+  long total_swaps = 0;
+
+  for (int run = 0; run < runs; run++) {
+    int *arr = (int *)malloc(size * sizeof(int));
+    generate_random_list(arr, size);
+
+    reset_metrics();
+    sort_func(arr, size);
+
+    total_comparisons += metrics.comparisons;
+    total_swaps += metrics.swaps;
+
+    free(arr);
+  }
+
+  printf("%ld,%ld,%ld\n", size, total_comparisons / runs, total_swaps / runs);
+}
+
+int main(int argc, char *argv[]) {
+  srand(time(NULL));
+
+  const int RUNS = 30;
+  const long MAX_SIZE = 1000;
+  const long STEP = 50;
+
+  void (*algorithms[])(int *, long) = {bubble_sort, insertion_sort, heap_sort,
+                                       merge_sort,  quick_sort,     radix_sort};
+
+  const char *names[] = {"Bubble Sort", "Insertion Sort", "Heap Sort",
+                         "Merge Sort",  "Quick Sort",     "Radix Sort"};
+
+  for (int alg = 0; alg < 6; alg++) {
+    printf("\n--- %s ---n", names[alg]);
+    printf("Size,Comparisons,Swaps\n");
+
+    for (long size = 1; size <= MAX_SIZE; size += STEP) {
+      if (size == 1) {
+        test_algorithm(algorithms[alg], names[alg], 1, RUNS);
+      }
+      test_algorithm(algorithms[alg], names[alg], size, RUNS);
+    }
+  }
+
+  return EXIT_SUCCESS;
+}
