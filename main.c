@@ -21,7 +21,6 @@
 // 2. Separar cada implementacao num modulo separado?
 // 3. Criar uma funcao de geracao de listas infinitas
 //
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -29,19 +28,15 @@
 
 // setup inicial das metricas e contagems de operacoes
 typedef struct {
-  long comparisons;
-  long swaps;
+  long operations;
 } Metrics;
 
 Metrics metrics;
 
-void reset_metrics() {
-  metrics.comparisons = 0;
-  metrics.swaps = 0;
-}
+void reset_metrics() { metrics.operations = 0; }
 
 void swap(int *a, int *b) {
-  metrics.swaps++;
+  metrics.operations++;
   int temp = *a;
   *a = *b;
   *b = temp;
@@ -51,7 +46,7 @@ void swap(int *a, int *b) {
 void bubble_sort(int *list, long n) {
   for (long i = 0; i < n - 1; i++) {
     for (long j = 0; j < n - i - 1; j++) {
-      metrics.comparisons++;
+      metrics.operations++;
       if (list[j] > list[j + 1]) {
         swap(&list[j], &list[j + 1]);
       }
@@ -66,9 +61,9 @@ void insertion_sort(int *list, long n) {
     long j = i - 1;
 
     while (j >= 0) {
-      metrics.comparisons++;
+      metrics.operations++;
       if (list[j] > key) {
-        metrics.swaps++;
+        metrics.operations++;
         list[j + 1] = list[j];
         j--;
       } else {
@@ -88,14 +83,14 @@ void _heap_sort(int *list, long n, long i) {
   long right = 2 * i + 2;
 
   if (left < n) {
-    metrics.comparisons++;
+    metrics.operations++;
     if (list[left] > list[largest]) {
       largest = left;
     }
   }
 
   if (right < n) {
-    metrics.comparisons++;
+    metrics.operations++;
     if (list[right] > list[largest]) {
       largest = right;
     }
@@ -136,13 +131,13 @@ void merge(int *list, long left, long mid, long right) {
   long i = 0, j = 0, k = left;
 
   while (i < n1 && j < n2) {
-    metrics.comparisons++;
+    metrics.operations++;
     if (L[i] <= R[j]) {
-      metrics.swaps++;
+      metrics.operations++;
       list[k] = L[i];
       i++;
     } else {
-      metrics.swaps++;
+      metrics.operations++;
       list[k] = R[j];
       j++;
     }
@@ -150,14 +145,14 @@ void merge(int *list, long left, long mid, long right) {
   }
 
   while (i < n1) {
-    metrics.swaps++;
+    metrics.operations++;
     list[k] = L[i];
     i++;
     k++;
   }
 
   while (j < n2) {
-    metrics.swaps++;
+    metrics.operations++;
     list[k] = R[j];
     j++;
     k++;
@@ -188,7 +183,7 @@ long partition(int *list, long low, long high) {
   long i = low - 1;
 
   for (long j = low; j < high; j++) {
-    metrics.comparisons++;
+    metrics.operations++;
     if (list[j] < pivo) {
       i++;
       swap(&list[i], &list[j]);
@@ -216,7 +211,7 @@ void quick_sort(int *list, long n) {
 int get_max(int *list, long n) {
   int max = list[0];
   for (long i = 1; i < n; i++) {
-    metrics.comparisons++;
+    metrics.operations++;
     if (list[i] > max) {
       max = list[i];
     }
@@ -237,7 +232,7 @@ void _radix_sort(int *list, long n, int exp) {
   }
 
   for (long i = n - 1; i >= 0; i--) {
-    metrics.swaps++;
+    metrics.operations++;
     output[count[(list[i] / exp) % 10] - 1] = list[i];
     count[(list[i] / exp) % 10]--;
   }
@@ -267,8 +262,7 @@ void generate_random_list(int *arr, long n) {
 // teste
 void test_algorithm(void (*sort_func)(int *, long), const char *name, long size,
                     int runs) {
-  long total_comparisons = 0;
-  long total_swaps = 0;
+  long total_operations = 0;
 
   for (int run = 0; run < runs; run++) {
     int *arr = (int *)malloc(size * sizeof(int));
@@ -277,13 +271,12 @@ void test_algorithm(void (*sort_func)(int *, long), const char *name, long size,
     reset_metrics();
     sort_func(arr, size);
 
-    total_comparisons += metrics.comparisons;
-    total_swaps += metrics.swaps;
+    total_operations += metrics.operations;
 
     free(arr);
   }
 
-  printf("%ld,%ld,%ld\n", size, total_comparisons / runs, total_swaps / runs);
+  printf("%ld,%ld\n", size, total_operations / runs);
 }
 
 int main(int argc, char *argv[]) {
@@ -300,8 +293,8 @@ int main(int argc, char *argv[]) {
                          "Merge Sort",  "Quick Sort",     "Radix Sort"};
 
   for (int alg = 0; alg < 6; alg++) {
-    printf("\n--- %s ---n", names[alg]);
-    printf("Size,Comparisons,Swaps\n");
+    printf("\n=== %s ===\n", names[alg]);
+    printf("Size,Operations\n");
 
     for (long size = 1; size <= MAX_SIZE; size += STEP) {
       if (size == 1) {
