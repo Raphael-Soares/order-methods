@@ -60,7 +60,27 @@ void bubble_sort(int *list, long n) {
   }
 }
 
-void insertion_sort(int *list, long n);
+void insertion_sort(int *list, long n) {
+  for (long i = 1; i < n; i++) {
+    int key = list[i];
+    long j = i - 1;
+
+    while (j >= 0) {
+      metrics.comparisons++;
+      if (list[j] > key) {
+        metrics.swaps++;
+        list[j + 1] = list[j];
+        j = j - 1;
+      } else {
+        break;
+      }
+    }
+    if (j + 1 != i) {
+      list[j + 1] = key;
+    }
+  }
+}
+
 void heap_sort(int *list, long n);
 void merge_sort(int *list, long n);
 void quick_sort(int *list, long n);
