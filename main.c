@@ -81,7 +81,42 @@ void insertion_sort(int *list, long n) {
   }
 }
 
-void heap_sort(int *list, long n);
+void _heap_sort(int *list, long n, long i) {
+  long largest = i;
+  long left = 2 * i + 1;
+  long right = 2 * i + 2;
+
+  if (left < n) {
+    metrics.comparisons++;
+    if (list[left] > list[largest]) {
+      largest = left;
+    }
+  }
+
+  if (right < n) {
+    metrics.comparisons++;
+    if (list[right] > list[largest]) {
+      largest = right;
+    }
+  }
+
+  if (largest != i) {
+    swap(&list[i], &list[largest]);
+    _heap_sort(list, n, largest);
+  }
+}
+
+void heap_sort(int *list, long n) {
+  for (long i = n / 2 - 1; i >= 0; i--) {
+    _heap_sort(list, n, i);
+  }
+
+  for (long i = n - 1; i > 0; i--) {
+    swap(&list[0], &list[i]);
+    _heap_sort(list, i, 0);
+  }
+}
+
 void merge_sort(int *list, long n);
 void quick_sort(int *list, long n);
 void radix_sort(int *list, long n);
