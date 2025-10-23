@@ -75,7 +75,7 @@ void insertion_sort(int *list, long n) {
       if (list[j] > key) {
         metrics.swaps++;
         list[j + 1] = list[j];
-        j = j - 1;
+        j--;
       } else {
         break;
       }
