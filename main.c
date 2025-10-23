@@ -26,6 +26,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+// setup inicial das metricas e contagems de operacoes
 typedef struct {
   long comparisons;
   long swaps;
@@ -51,6 +52,7 @@ void swap(int *a, int *b) {
   *b = temp;
 }
 
+// bubble
 void bubble_sort(int *list, long n) {
   for (long i = 0; i < n - 1; i++) {
     for (long j = 0; j < n - i - 1; j++) {
@@ -62,6 +64,7 @@ void bubble_sort(int *list, long n) {
   }
 }
 
+// insertion
 void insertion_sort(int *list, long n) {
   for (long i = 1; i < n; i++) {
     int key = list[i];
@@ -83,6 +86,7 @@ void insertion_sort(int *list, long n) {
   }
 }
 
+// heap
 void _heap_sort(int *list, long n, long i) {
   long largest = i;
   long left = 2 * i + 1;
@@ -119,6 +123,7 @@ void heap_sort(int *list, long n) {
   }
 }
 
+// merge
 void merge(int *list, long left, long mid, long right) {
   long n1 = mid - left + 1;
   long n2 = right - mid;
@@ -182,6 +187,7 @@ void merge_sort(int *list, long n) {
   }
 }
 
+// quick
 long partition(int *list, long low, long high) {
   int pivo = list[high];
   long i = low - 1;
