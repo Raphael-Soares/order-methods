@@ -22,7 +22,9 @@
 // 3. Criar uma funcao de geracao de listas infinitas
 //
 
+#include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 typedef struct {
   long comparisons;
@@ -117,8 +119,97 @@ void heap_sort(int *list, long n) {
   }
 }
 
-void merge_sort(int *list, long n);
-void quick_sort(int *list, long n);
+void merge(int *list, long left, long mid, long right) {
+  long n1 = mid - left + 1;
+  long n2 = right - mid;
+
+  int *L = (int *)malloc(n1 * sizeof(int));
+  int *R = (int *)malloc(n2 * sizeof(int));
+
+  for (long i = 0; i < n1; i++) {
+    L[i] = list[left + i];
+  }
+  for (long j = 0; j < n2; j++) {
+    R[j] = list[mid + 1 + j];
+  }
+
+  long i = 0, j = 0, k = left;
+
+  while (i < n1 && j < n2) {
+    metrics.comparisons++;
+    if (L[i] <= R[j]) {
+      metrics.swaps++;
+      list[k] = L[i];
+      i++;
+    } else {
+      metrics.swaps++;
+      list[k] = R[j];
+      j++;
+    }
+    k++;
+  }
+
+  while (i < n1) {
+    metrics.swaps++;
+    list[k] = L[i];
+    i++;
+    k++;
+  }
+
+  while (j < n2) {
+    metrics.swaps++;
+    list[k] = R[j];
+    j++;
+    k++;
+  }
+
+  free(L);
+  free(R);
+}
+
+void _merge_sort(int *list, long left, long right) {
+  if (left < right) {
+    long mid = left + (right - left) / 2;
+    _merge_sort(list, left, mid);
+    _merge_sort(list, mid + 1, right);
+    merge(list, left, mid, right);
+  }
+}
+
+void merge_sort(int *list, long n) {
+  if (n > 1) {
+    _merge_sort(list, 0, n - 1);
+  }
+}
+
+long partition(int *list, long low, long high) {
+  int pivo = list[high];
+  long i = low - 1;
+
+  for (long j = low; j < high; j++) {
+    metrics.comparisons++;
+    if (list[j] < pivo) {
+      i++;
+      swap(&list[i], &list[j]);
+    }
+  }
+  swap(&list[i + 1], &list[high]);
+  return i + 1;
+}
+
+void quick_sort_recursive(int *list, long low, long high) {
+  if (low < high) {
+    long pi = partition(list, low, high);
+    quick_sort_recursive(list, low, pi - 1);
+    quick_sort_recursive(list, pi + 1, high);
+  }
+}
+
+void quick_sort(int *list, long n) {
+  if (n > 1) {
+    quick_sort_recursive(list, 0, n - 1);
+  }
+}
 void radix_sort(int *list, long n);
 
 int main(int argc, char *argv[]) { return EXIT_SUCCESS; }
