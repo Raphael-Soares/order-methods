@@ -197,19 +197,63 @@ long partition(int *list, long low, long high) {
   return i + 1;
 }
 
-void quick_sort_recursive(int *list, long low, long high) {
+void _quick_sort(int *list, long low, long high) {
   if (low < high) {
     long pi = partition(list, low, high);
-    quick_sort_recursive(list, low, pi - 1);
-    quick_sort_recursive(list, pi + 1, high);
+    _quick_sort(list, low, pi - 1);
+    _quick_sort(list, pi + 1, high);
   }
 }
 
 void quick_sort(int *list, long n) {
   if (n > 1) {
-    quick_sort_recursive(list, 0, n - 1);
+    _quick_sort(list, 0, n - 1);
   }
 }
-void radix_sort(int *list, long n);
+
+// radix
+int get_max(int *list, long n) {
+  int max = list[0];
+  for (long i = 1; i < n; i++) {
+    metrics.comparisons++;
+    if (list[i] > max) {
+      max = list[i];
+    }
+  }
+  return max;
+}
+
+void _radix_sort(int *list, long n, int exp) {
+  int *output = (int *)malloc(n * sizeof(int));
+  int count[10] = {0};
+
+  for (long i = 0; i < n; i++) {
+    count[(list[i] / exp) % 10]++;
+  }
+
+  for (int i = 1; i < 10; i++) {
+    count[i] += count[i - 1];
+  }
+
+  for (long i = n - 1; i >= 0; i--) {
+    metrics.swaps++;
+    output[count[(list[i] / exp) % 10] - 1] = list[i];
+    count[(list[i] / exp) % 10]--;
+  }
+
+  for (long i = 0; i < n; i++) {
+    list[i] = output[i];
+  }
+
+  free(output);
+}
+
+void radix_sort(int *list, long n) {
+  int max = get_max(list, n);
+
+  for (int exp = 1; max / exp > 0; exp *= 10) {
+    _radix_sort(list, n, exp);
+  }
+}
 
 int main(int argc, char *argv[]) { return EXIT_SUCCESS; }
