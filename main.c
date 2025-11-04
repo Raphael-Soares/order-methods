@@ -279,6 +279,17 @@ void test_algorithm(void (*sort_func)(int *, long), const char *name, long size,
   printf("%ld,%ld\n", size, total_operations / runs);
 }
 
+int linearSearch(int key, int *v, int n) {
+  int i;
+  for (i = 0; i < n; i++) {
+    if (v[i] == key) {
+      return i;
+    }
+  }
+
+  return -1;
+}
+
 int main(int argc, char *argv[]) {
   srand(time(NULL));
 
@@ -286,22 +297,17 @@ int main(int argc, char *argv[]) {
   const long MAX_SIZE = 1000;
   const long STEP = 50;
 
-  void (*algorithms[])(int *, long) = {bubble_sort, insertion_sort, heap_sort,
-                                       merge_sort,  quick_sort,     radix_sort};
+  int size = 10000;
+  int *arr = (int *)malloc(size * sizeof(int));
+  generate_random_list(arr, size);
 
-  const char *names[] = {"Bubble Sort", "Insertion Sort", "Heap Sort",
-                         "Merge Sort",  "Quick Sort",     "Radix Sort"};
+  int search_size = 40;
+  int *search_arr = (int *)malloc(size * sizeof(int));
+  generate_random_list(search_arr, search_size);
 
-  for (int alg = 0; alg < 6; alg++) {
-    printf("\n=== %s ===\n", names[alg]);
-    printf("Size,Operations\n");
-
-    for (long size = 1; size <= MAX_SIZE; size += STEP) {
-      if (size == 1) {
-        test_algorithm(algorithms[alg], names[alg], 1, RUNS);
-      }
-      test_algorithm(algorithms[alg], names[alg], size, RUNS);
-    }
+  for (int i = 0; i < search_size; i++) {
+    printf("searching %d : index %d \n", search_arr[i],
+           linearSearch(search_arr[i] % size, arr, size));
   }
 
   return EXIT_SUCCESS;
