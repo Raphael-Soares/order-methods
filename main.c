@@ -1,32 +1,8 @@
-// O objetivo deste trabalho consiste em analisar e comparar a complexidade
-// algorítmica dos métodos de ordenação estudados na disciplina (bubble-sort,
-// insertion-sort, heap-sort, merge-sort, quick-sort e radix-sort). A análise
-// deve ser realizada considerando a geração de um conjunto de números inteiros
-// com tamanho variando entre 1 e 1000. Os números devem ser gerados prevendo
-// apenas o caso médio (números gerados aleatoriamente). Para geração dos
-// números aleatórios, sugere-se o uso da função rand e srand em C. Além disso,
-// devido à natureza aleatória do caso médio, recomenda-se considerar o
-// resultado médio de 30 execuções distintas para validade estatística.
-//
-// O resultado final do experimento deve ser exibido em um gráfico de linha,
-// onde o eixo X representa o tamanho dos conjuntos de dados (1 a 1000 - mínimo)
-// e o eixo Y representa o esforço computacional das operações de troca de
-// valores no vetor e comparações. O gráfico deve apresentar 6 linhas, as quais
-// representam cada método de ordenação considerado na análise. Cada equipe deve
-// entregar um relatório com o gráfico e considerações sobre os resultados
-// encontrados, bem como os códigos usados no experimento.
-
-//---------- TODO----------
-// 1. Criar as implementacoes iniciais
-// 2. Separar cada implementacao num modulo separado?
-// 3. Criar uma funcao de geracao de listas infinitas
-//
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include <time.h>
 
-// setup inicial das metricas e contagems de operacoes
+// métricas e contadores
 typedef struct {
   long operations;
 } Metrics;
@@ -59,7 +35,6 @@ void insertion_sort(int *list, long n) {
   for (long i = 1; i < n; i++) {
     int key = list[i];
     long j = i - 1;
-
     while (j >= 0) {
       metrics.operations++;
       if (list[j] > key) {
@@ -121,12 +96,10 @@ void merge(int *list, long left, long mid, long right) {
   int *L = (int *)malloc(n1 * sizeof(int));
   int *R = (int *)malloc(n2 * sizeof(int));
 
-  for (long i = 0; i < n1; i++) {
+  for (long i = 0; i < n1; i++)
     L[i] = list[left + i];
-  }
-  for (long j = 0; j < n2; j++) {
+  for (long j = 0; j < n2; j++)
     R[j] = list[mid + 1 + j];
-  }
 
   long i = 0, j = 0, k = left;
 
@@ -134,28 +107,20 @@ void merge(int *list, long left, long mid, long right) {
     metrics.operations++;
     if (L[i] <= R[j]) {
       metrics.operations++;
-      list[k] = L[i];
-      i++;
+      list[k++] = L[i++];
     } else {
       metrics.operations++;
-      list[k] = R[j];
-      j++;
+      list[k++] = R[j++];
     }
-    k++;
   }
 
   while (i < n1) {
     metrics.operations++;
-    list[k] = L[i];
-    i++;
-    k++;
+    list[k++] = L[i++];
   }
-
   while (j < n2) {
     metrics.operations++;
-    list[k] = R[j];
-    j++;
-    k++;
+    list[k++] = R[j++];
   }
 
   free(L);
@@ -181,7 +146,6 @@ void merge_sort(int *list, long n) {
 long partition(int *list, long low, long high) {
   int pivo = list[high];
   long i = low - 1;
-
   for (long j = low; j < high; j++) {
     metrics.operations++;
     if (list[j] < pivo) {
@@ -202,9 +166,8 @@ void _quick_sort(int *list, long low, long high) {
 }
 
 void quick_sort(int *list, long n) {
-  if (n > 1) {
+  if (n > 1)
     _quick_sort(list, 0, n - 1);
-  }
 }
 
 // radix
@@ -212,9 +175,8 @@ int get_max(int *list, long n) {
   int max = list[0];
   for (long i = 1; i < n; i++) {
     metrics.operations++;
-    if (list[i] > max) {
+    if (list[i] > max)
       max = list[i];
-    }
   }
   return max;
 }
@@ -223,92 +185,78 @@ void _radix_sort(int *list, long n, int exp) {
   int *output = (int *)malloc(n * sizeof(int));
   int count[10] = {0};
 
-  for (long i = 0; i < n; i++) {
+  for (long i = 0; i < n; i++)
     count[(list[i] / exp) % 10]++;
-  }
-
-  for (int i = 1; i < 10; i++) {
+  for (int i = 1; i < 10; i++)
     count[i] += count[i - 1];
-  }
 
   for (long i = n - 1; i >= 0; i--) {
     metrics.operations++;
     output[count[(list[i] / exp) % 10] - 1] = list[i];
     count[(list[i] / exp) % 10]--;
   }
-
-  for (long i = 0; i < n; i++) {
+  for (long i = 0; i < n; i++)
     list[i] = output[i];
-  }
 
   free(output);
 }
 
 void radix_sort(int *list, long n) {
   int max = get_max(list, n);
-
   for (int exp = 1; max / exp > 0; exp *= 10) {
     _radix_sort(list, n, exp);
   }
 }
 
-// funcao para gerar lista aleatório
 void generate_random_list(int *arr, long n) {
   for (long i = 0; i < n; i++) {
     arr[i] = rand() % 10000;
   }
 }
 
-// teste
-void test_algorithm(void (*sort_func)(int *, long), const char *name, long size,
-                    int runs) {
+// executa um algoritmo e devolve a média das operações
+void testar_algoritmo(void (*sort_func)(int *, long), const char *name,
+                      long size, int runs) {
   long total_operations = 0;
-
   for (int run = 0; run < runs; run++) {
     int *arr = (int *)malloc(size * sizeof(int));
     generate_random_list(arr, size);
 
     reset_metrics();
     sort_func(arr, size);
-
     total_operations += metrics.operations;
 
     free(arr);
   }
-
   printf("%ld,%ld\n", size, total_operations / runs);
 }
 
-int linearSearch(int key, int *v, int n) {
-  int i;
-  for (i = 0; i < n; i++) {
-    if (v[i] == key) {
-      return i;
-    }
+void executar_experimento(const char *nome, void (*sort_func)(int *, long),
+                          long max_size, int step, int runs) {
+  printf("=== %s ===\n", nome);
+  printf("Size,Operations\n");
+  for (long size = 1; size <= max_size; size += step) {
+    testar_algoritmo(sort_func, nome, size, runs);
   }
-
-  return -1;
+  printf("\n");
 }
 
-int main(int argc, char *argv[]) {
+int main() {
   srand(time(NULL));
+  freopen("output.txt", "w", stdout);
 
   const int RUNS = 30;
   const long MAX_SIZE = 1000;
-  const long STEP = 50;
+  const int STEP = 50;
 
-  int size = 10000;
-  int *arr = (int *)malloc(size * sizeof(int));
-  generate_random_list(arr, size);
+  executar_experimento("Bubble Sort", bubble_sort, MAX_SIZE, STEP, RUNS);
+  executar_experimento("Insertion Sort", insertion_sort, MAX_SIZE, STEP, RUNS);
+  executar_experimento("Heap Sort", heap_sort, MAX_SIZE, STEP, RUNS);
+  executar_experimento("Merge Sort", merge_sort, MAX_SIZE, STEP, RUNS);
+  executar_experimento("Quick Sort", quick_sort, MAX_SIZE, STEP, RUNS);
+  executar_experimento("Radix Sort", radix_sort, MAX_SIZE, STEP, RUNS);
 
-  int search_size = 40;
-  int *search_arr = (int *)malloc(size * sizeof(int));
-  generate_random_list(search_arr, search_size);
-
-  for (int i = 0; i < search_size; i++) {
-    printf("searching %d : index %d \n", search_arr[i],
-           linearSearch(search_arr[i] % size, arr, size));
-  }
-
-  return EXIT_SUCCESS;
+  fclose(stdout);
+  printf("concluído, resultados salvos em output.txt\n");
+  return 0;
 }
